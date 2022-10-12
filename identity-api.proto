@@ -1,0 +1,136 @@
+syntax = "proto3";
+
+package identity_api;
+
+option go_package = "./pb";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+message Context {
+  string access_token = 1;
+}
+
+message StringRequest {
+  Context ctx = 1;
+  string value = 2;
+}
+
+message StringResponse {
+
+}
+
+message MessageResponse {
+  bool ok = 1;
+}
+
+message User {
+  string user_id = 1;
+  string full_name = 2;
+  string email = 3;
+  string username = 4;
+  bool permission_all = 5;
+  string role = 6;
+  repeated Permission permissions = 7;
+  string status = 8;
+  int32 create_time = 9;
+  int32 update_time = 10;
+}
+
+message ListUserResponse {
+  repeated User data = 1;
+  int32 total = 2;
+}
+
+message Permission {
+  string privilege = 1;
+  repeated string actions = 2;
+}
+
+message UserRequest {
+  Context ctx = 1;
+  User data = 2;
+}
+
+message UpdateUserRequest {
+  Context ctx = 1;
+  User data = 2;
+  string value = 3;
+}
+
+message Pagination {
+  int32 number = 1;
+	int32 limit = 2;
+}
+
+message ListRequest {
+  Context ctx = 1;
+  Pagination data = 2;
+  string search = 3;
+}
+
+message ApproveUserRequest {
+  Context ctx = 1;
+  string user_id = 2;
+  string status = 3;
+}
+
+service IdentityService {
+  rpc Create(UserRequest) returns (User) {
+    option (google.api.http) = {
+			post: "/v1/identity-api/users/create"
+		   	body: "*"
+		};
+  }
+  rpc GetById(StringRequest) returns (User) {
+    option (google.api.http) = {
+			get: "/v1/identity-api/users/{value}"
+		};
+  }
+  rpc GetByLoginName(StringRequest) returns (User) {
+    option (google.api.http) = {
+			post: "/v1/identity-api/users/getByLoginName"
+		   	body: "*"
+		};
+  }
+  rpc GetByEmail(StringRequest) returns (User) {
+    option (google.api.http) = {
+			post: "/v1/identity-api/users/getByEmail"
+		   	body: "*"
+		};
+  }
+  rpc GetAll(ListRequest) returns (ListUserResponse) {
+    option (google.api.http) = {
+			get: "/v1/identity-api/users/getAll"
+		};
+  }
+  rpc UpdatebyId(UpdateUserRequest) returns (StringResponse) {
+    option (google.api.http) = {
+			put: "/v1/identity-api/users/{value}"
+		   	body: "*"
+		};
+  }
+  rpc UpdateInfoUserbyId(UpdateUserRequest) returns (StringResponse) {
+    option (google.api.http) = {
+			put: "/v1/identity-api/users/info/{value}"
+		   	body: "*"
+		};
+  }
+  rpc UpdateRoleUserbyId(UpdateUserRequest) returns (StringResponse) {
+    option (google.api.http) = {
+			put: "/v1/identity-api/users/role/{value}"
+		   	body: "*"
+		};
+  }
+  rpc DeleteById(StringRequest) returns (StringResponse) {
+    option (google.api.http) = {
+			delete: "/v1/identity-api/users/{value}"
+		};
+  }
+  rpc ApproveUser(ApproveUserRequest) returns (StringResponse) {
+    option (google.api.http) = {
+			post: "/v1/identity-api/users/approve"
+		   	body: "*"
+		};
+  }
+}
