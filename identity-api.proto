@@ -8,7 +8,9 @@ import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 message Context {
-  string access_token = 1;
+  string domain_id = 1;
+  string access_token = 2;
+  map<string,string> meta = 3;
 }
 
 message StringRequest {
@@ -30,16 +32,25 @@ message User {
   string email = 3;
   string username = 4;
   bool permission_all = 5;
-  string role = 6;
+  repeated string roles = 6;
   repeated Permission permissions = 7;
   string status = 8;
-  int32 create_time = 9;
-  int32 update_time = 10;
+  int32 created_time = 9;
+  int32 updated_time = 10;
+  string domain_id = 11;
+  map<string,string> meta = 12;
+  string type = 13;
+  string user_type = 14;
+  int32 position = 15;
 }
 
 message ListUserResponse {
   repeated User data = 1;
   int32 total = 2;
+}
+
+message UserResponse {
+  User data = 1;
 }
 
 message Permission {
@@ -50,6 +61,12 @@ message Permission {
 message UserRequest {
   Context ctx = 1;
   User data = 2;
+}
+
+message FakeUserRequest {
+  Context ctx = 1;
+  int32 number_user = 2;
+  string password = 3;
 }
 
 message UpdateUserRequest {
@@ -64,10 +81,26 @@ message Pagination {
 }
 
 message ListRequest {
+  enum OrderType {
+      ASC = 0;
+      DESC = 1;
+  }
+  message Filter {
+      string key = 1;
+      string value = 2;
+      string operator = 3;
+  }
+
   Context ctx = 1;
-  Pagination data = 2;
-  string search = 3;
+  int32 offset = 2;
+  int32 limit = 3;
+  string search = 4;
+  map<string,OrderType> orders = 5;
+  repeated Filter filters = 6;
+  map<string,string> extra_params = 7;
+  string request_payload = 8;
 }
+
 
 message ApproveUserRequest {
   Context ctx = 1;
@@ -76,61 +109,68 @@ message ApproveUserRequest {
 }
 
 service IdentityService {
-  rpc Create(UserRequest) returns (User) {
+  rpc Create(UserRequest) returns (UserResponse) {
     option (google.api.http) = {
-			post: "/v1/identity-api/users/create"
+			post: "/v1/identity-api/{ctx.domain_id}/users"
 		   	body: "*"
 		};
   }
-  rpc GetById(StringRequest) returns (User) {
+  rpc GetById(StringRequest) returns (UserResponse) {
     option (google.api.http) = {
-			get: "/v1/identity-api/users/{value}"
+			get: "/v1/identity-api/{ctx.domain_id}/users/{value}"
 		};
   }
-  rpc GetByLoginName(StringRequest) returns (User) {
+  rpc GetByLoginName(StringRequest) returns (UserResponse) {
     option (google.api.http) = {
-			post: "/v1/identity-api/users/getByLoginName"
+			post: "/v1/identity-api/{ctx.domain_id}/users/getByLoginName"
 		   	body: "*"
 		};
   }
-  rpc GetByEmail(StringRequest) returns (User) {
+  rpc GetByEmail(StringRequest) returns (UserResponse) {
     option (google.api.http) = {
-			post: "/v1/identity-api/users/getByEmail"
+			post: "/v1/identity-api/{ctx.domain_id}/users/getByEmail"
 		   	body: "*"
 		};
   }
   rpc GetAll(ListRequest) returns (ListUserResponse) {
     option (google.api.http) = {
-			get: "/v1/identity-api/users/getAll"
+			get: "/v1/identity-api/{ctx.domain_id}/users/@all/getAll"
 		};
   }
-  rpc UpdatebyId(UpdateUserRequest) returns (StringResponse) {
+  rpc Update(UpdateUserRequest) returns (UserResponse) {
     option (google.api.http) = {
-			put: "/v1/identity-api/users/{value}"
+			put: "/v1/identity-api/{ctx.domain_id}/users/{value}"
 		   	body: "*"
 		};
   }
   rpc UpdateInfoUserbyId(UpdateUserRequest) returns (StringResponse) {
     option (google.api.http) = {
-			put: "/v1/identity-api/users/info/{value}"
+			put: "/v1/identity-api/{ctx.domain_id}/users/info/{value}"
 		   	body: "*"
 		};
   }
   rpc UpdateRoleUserbyId(UpdateUserRequest) returns (StringResponse) {
     option (google.api.http) = {
-			put: "/v1/identity-api/users/role/{value}"
+			put: "/v1/identity-api/{ctx.domain_id}/users/role/{value}"
 		   	body: "*"
 		};
   }
   rpc DeleteById(StringRequest) returns (StringResponse) {
     option (google.api.http) = {
-			delete: "/v1/identity-api/users/{value}"
+			delete: "/v1/identity-api/{ctx.domain_id}/users/{value}"
 		};
   }
   rpc ApproveUser(ApproveUserRequest) returns (StringResponse) {
     option (google.api.http) = {
-			post: "/v1/identity-api/users/approve"
+			post: "/v1/identity-api/{ctx.domain_id}/users/approve"
 		   	body: "*"
+		};
+  }
+
+  rpc FakeUsers(FakeUserRequest) returns (StringResponse) {
+    option (google.api.http) = {
+			post: "/v1/identity-api/{ctx.domain_id}/users/@all/fake_users"
+        body: "*"
 		};
   }
 }

@@ -8,7 +8,30 @@ import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 message Context {
-  string access_token = 1;
+  string domain_id = 1;
+  string access_token = 2;
+}
+
+message Permission {
+  string privilege = 1;
+  repeated string actions = 2;
+}
+
+message User {
+  string user_id = 1;
+  string full_name = 2;
+  string email = 3;
+  string username = 4;
+  bool permission_all = 5;
+  repeated string role = 6;
+  repeated Permission permissions = 7;
+  string status = 8;
+  int32 created_time = 9;
+  int32 updated_time = 10;
+  string domain_id = 11;
+  map<string,string> meta = 12;
+  string type = 13;
+  string user_type = 14;
 }
 
 message StringRequest {
@@ -37,6 +60,8 @@ message LoginRequest {
   int32 otp = 5;
   string request_id = 6;
   string type_mfa = 7;
+  string user_type = 8;
+  string domain = 9;
 } 
 
 message LoginResponse {
@@ -61,7 +86,8 @@ message PrepareLoginResponse {
 }
 
 message ForgotPasswordRequest {
-  string data = 1;
+  Context ctx = 1;
+  string data = 2;
 }
 
 message UpdatePasswordRequest {
@@ -77,9 +103,17 @@ message UpdateMfaRequest {
 }
 
 message UserRegisterRequest {
-  string full_name = 1;
-  string email = 2;
-  string username = 3;
+  Context ctx = 1;
+  string full_name = 2;
+  string email = 3;
+  string username = 4;
+  string password = 5;
+}
+
+message RegisteResponse {
+  string token = 1;
+  int32 error_code = 2;
+  string message = 3;
 }
 
 message AuthenInfo {
@@ -106,64 +140,72 @@ message MfaResponse {
 service IdentityAuthenService {
   rpc Login(LoginRequest) returns (LoginResponse) {
     option (google.api.http) = {
-			post: "/v1/identity-authen-api/login"
+			post: "/v1/identity-authen-api/{ctx.domain_id}/login"
 		   	body: "*"
 		};
   }
   rpc Logout(Request) returns (MessageResponse) {
     option (google.api.http) = {
-			get: "/v1/identity-authen-api/logout"
+			get: "/v1/identity-authen-api/{ctx.domain_id}/logout"
 		};
   }
   rpc PrepareLogin(PrepareLoginRequest) returns (PrepareLoginResponse) {
     option (google.api.http) = {
-			post: "/v1/identity-authen-api/prepare_login"
+			post: "/v1/identity-authen-api/{ctx.domain_id}/prepare_login"
 		   	body: "*"
 		};
   }
   rpc ForgotPassword(ForgotPasswordRequest) returns (MessageResponse) {
     option (google.api.http) = {
-			post: "/v1/identity-authen-api/forgot_password"
+			post: "/v1/identity-authen-api/{ctx.domain_id}/forgot_password"
 		   	body: "*"
 		};
   }
   rpc UpdateForgotPassword(UpdatePasswordRequest) returns (MessageResponse) {
     option (google.api.http) = {
-			post: "/v1/identity-authen-api/forgot_password/update"
+			post: "/v1/identity-authen-api/{ctx.domain_id}/forgot_password/update"
 		   	body: "*"
 		};
   }
   rpc UpdatePassword(UpdatePasswordRequest) returns (MessageResponse) {
     option (google.api.http) = {
-			put: "/v1/identity-authen-api/update_password/{user_id}"
+			put: "/v1/identity-authen-api/{ctx.domain_id}/update_password/{user_id}"
 		   	body: "*"
 		};
   }
   rpc UpdateMfa(UpdateMfaRequest) returns (MessageResponse) {
     option (google.api.http) = {
-			put: "/v1/identity-authen-api/update_mfa/{user_id}"
+			put: "/v1/identity-authen-api/{ctx.domain_id}/update_mfa/{user_id}"
 		   	body: "*"
 		};
   }
   rpc GetMfaType(StringRequest) returns (MfaResponse) {
     option (google.api.http) = {
-			get: "/v1/identity-authen-api/get_mfa/{value}"
+			get: "/v1/identity-authen-api/{ctx.domain_id}/get_mfa/{value}"
 		};
   }
-  rpc RegisterUser(UserRegisterRequest) returns (MessageResponse) {
+  rpc RegisterUser(UserRegisterRequest) returns (RegisteResponse) {
     option (google.api.http) = {
-			post: "/v1/identity-authen-api/registers"
+			post: "/v1/identity-authen-api/{ctx.domain_id}/registers"
 		   	body: "*"
 		};
   }
+
+  rpc RequestVerifyEmail(StringRequest) returns (MessageResponse) {
+    option (google.api.http) = {
+			post: "/v1/identity-authen-api/{ctx.domain_id}/request_verify_email"
+		   	body: "*"
+		};
+  }
+
   rpc VerifyUser(Request) returns (MessageResponse) {
     option (google.api.http) = {
-			get: "/v1/identity-authen-api/verify-user"
+			get: "/v1/identity-authen-api/{ctx.domain_id}/verify-user"
 		};
   }
   rpc VerifyForgotPassword(Request) returns (MessageResponse) {
     option (google.api.http) = {
-			get: "/v1/identity-authen-api/verify-forgot-password"
+			get: "/v1/identity-authen-api/{ctx.domain_id}/verify-forgot-password"
 		};
   }
   

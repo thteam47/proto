@@ -1,0 +1,442 @@
+syntax = "proto3";
+
+package agent_pc;
+
+option go_package = "./pb";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+message Context {
+  string domain_id = 1;
+  string access_token = 2;
+  map<string,string> meta = 3;
+  string token_agent = 4;
+  string part = 5;
+}
+
+message StringRequest {
+  Context ctx = 1;
+  string value = 2;
+}
+
+message StringResponse {
+
+}
+
+message MessageResponse {
+  bool ok = 1;
+  string message = 2;
+}
+
+message User {
+  string user_id = 1;
+  string full_name = 2;
+  string email = 3;
+  string username = 4;
+  bool permission_all = 5;
+  repeated string role = 6;
+  repeated Permission permissions = 7;
+  string status = 8;
+  int32 created_time = 9;
+  int32 updated_time = 10;
+  string domain_id = 11;
+  map<string,string> meta = 12;
+  string type = 13;
+  string user_type = 14;
+}
+
+message ListUserResponse {
+  repeated User data = 1;
+  int32 total = 2;
+}
+
+message UserResponse {
+  User data = 1;
+}
+
+message Permission {
+  string privilege = 1;
+  repeated string actions = 2;
+}
+
+message UserRequest {
+  Context ctx = 1;
+  User data = 2;
+}
+
+message FakeUserRequest {
+  Context ctx = 1;
+  int32 number_user = 2;
+  string password = 3;
+}
+
+message UpdateUserRequest {
+  Context ctx = 1;
+  User data = 2;
+  string value = 3;
+}
+
+message Pagination {
+  int32 number = 1;
+	int32 limit = 2;
+}
+
+message ListRequest {
+  enum OrderType {
+      ASC = 0;
+      DESC = 1;
+  }
+  message Filter {
+      string key = 1;
+      string value = 2;
+      string operator = 3;
+  }
+
+  Context ctx = 1;
+  int32 offset = 2;
+  int32 limit = 3;
+  string search = 4;
+  map<string,OrderType> orders = 5;
+  repeated Filter filters = 6;
+  map<string,string> extra_params = 7;
+  string request_payload = 8;
+}
+
+message LoginRequest {
+  Context ctx = 1;
+  string type = 2;
+  string username = 3;
+  string password = 4;
+  int32 otp = 5;
+  string request_id = 6;
+  string type_mfa = 7;
+  string user_type = 8;
+  string domain = 9;
+} 
+
+message LoginResponse {
+  string token = 1;
+  int32 error_code = 2;
+  string message = 3;
+}
+
+message PrepareLoginRequest {
+  Context ctx = 1;
+}
+
+message PrepareLoginResponse {
+  string token = 1;
+  int32 error_code = 2;
+  string message = 3;
+  string request_id = 4;
+  string type_mfa = 5;
+  repeated string available_mfas = 6;
+  string secret = 7;
+  string url = 8;
+  string token_agent = 9;
+}
+
+message UserRegisterRequest {
+  Context ctx = 1;
+  string full_name = 2;
+  string email = 3;
+  string username = 4;
+  string password = 5;
+}
+
+message RegisteResponse {
+  string token = 1;
+  int32 error_code = 2;
+  string message = 3;
+}
+
+message Request {
+  Context ctx = 1;
+}
+
+message ResultCard {
+  string result_card_id = 1;
+  string survey_id = 2;
+  string category_id = 3;
+  int32 position_item = 4;
+  string option = 5;
+  string domain_id = 6;
+  string user_id = 7;
+  string position_user = 8;
+  string position_option = 9;
+}
+
+message KeyPublicItem {
+  string domain_id = 1;
+  string key_public = 2;
+  string user_id = 3;
+  int32 position_user = 4;
+  string category_id = 5;
+  int32 position_item = 6;
+  int32 part = 7;
+  string key_public_item_id = 8;
+}
+
+message KeyPublicItemRequest {
+  Context ctx = 1;
+  KeyPublicItem data = 2;
+}
+
+message KeyPublicUser {
+  string domain_id = 1;
+  string key_public = 2;
+  string user_id = 3;
+  int32 position_user = 4;
+  int32 part = 5;
+  string key_public_user_id = 6;
+}
+
+message KeyPublicUserRequest {
+  Context ctx = 1;
+  KeyPublicUser data = 2;
+}
+
+message KeyPublicUse {
+  string domain_id = 1;
+  int32 part = 2;
+  string category_id = 3;
+  int32 position_item = 4;
+  string key_public_use_id = 5;
+  string key_public = 6;
+}
+
+message KeyPublicUseRequest {
+  Context ctx = 1;
+  KeyPublicUse data = 2;
+}
+
+message KeyPublicUseResponse {
+  Context ctx = 1;
+  KeyPublicUse data = 2;
+}
+
+message RequestGenarateRecommend {
+  Context ctx = 1;
+  string user_id = 2;
+}
+
+message ResultRecommend {
+  int32 position_item = 1;
+  float process_data =2;
+}
+
+message GenarateRecommendResponse {
+  repeated ResultRecommend data = 1;
+}
+
+message Question {
+  string message = 1;
+  repeated string answers = 2;
+  string type = 3;
+  string category_id = 4;
+  int32 position = 5;
+}
+
+message Survey {
+  string survey_id = 1;
+  string user_id_create = 2;
+  string user_id_verify = 3;
+  repeated string user_id_join = 4;
+  repeated Question questions = 5;
+  string status = 6;
+  int32 created_time = 7;
+  int32 updated_time = 8;
+  string domain_id = 9;
+  string type = 10;
+  string name = 11;
+}
+
+message ListSurveyResponse {
+  repeated Survey data = 1;
+  int32 total = 2;
+}
+
+message Category {
+  string category_id = 1;
+  string name = 2;
+  int32 created_time = 3;
+  int32 updated_time = 4;
+  string domain_id = 5;
+  string type = 6;
+}
+
+message ListCategoryResponse {
+  repeated Category data = 1;
+  int32 total = 2;
+}
+
+message RequestGenarateRecommendUser {
+  Context ctx = 1;
+  map<string, int32> process_data = 2;
+}
+
+message CategoryRecommend {
+  string category_id = 1;
+  string name = 2;
+  int32 created_time = 3;
+  int32 updated_time = 4;
+  string domain_id = 5;
+  string type = 6;
+  float process_data = 7;
+}
+
+message ListCategoryRecommendResponse {
+  repeated CategoryRecommend data = 1;
+  int32 total = 2;
+}
+
+service AgentpcService {
+  rpc GetById(Request) returns (UserResponse) {
+    option (google.api.http) = {
+			get: "/users"
+		};
+  }
+  rpc Update(UpdateUserRequest) returns (UserResponse) {
+    option (google.api.http) = {
+			put: "/users"
+		   	body: "*"
+		};
+  }
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+			post: "/login"
+		   	body: "*"
+		};
+  }
+  rpc Logout(Request) returns (MessageResponse) {
+    option (google.api.http) = {
+			get: "/logout"
+		};
+  }
+  rpc PrepareLogin(PrepareLoginRequest) returns (PrepareLoginResponse) {
+    option (google.api.http) = {
+			post: "/prepare_login"
+		   	body: "*"
+		};
+  }
+  rpc FakeGenerateKeyInfo(StringRequest) returns (MessageResponse) {
+    option (google.api.http) = {
+			post: "/fake/key_info/{value}"
+		   	body: "*"
+		};
+  }
+  rpc KeyPublicItemGenerate(Request) returns (MessageResponse) {
+    option (google.api.http) = {
+			post: "/key_public/receive/item"
+        body: "*"
+		};
+  }
+  rpc FakeKeyPublicItemGenerate(StringRequest) returns (MessageResponse) {
+    option (google.api.http) = {
+			post: "/key_public/receive/item/{value}"
+        body: "*"
+		};
+  }
+  rpc FakeDoSurveyGenerate(StringRequest) returns (MessageResponse) {
+    option (google.api.http) = {
+			post: "/do_survey/{value}"
+        body: "*"
+		};
+  }
+
+  rpc ProcessDataSurvey(StringRequest) returns (MessageResponse) {
+    option (google.api.http) = {
+			post: "/process_data/survey/{value}"
+        body: "*"
+		};
+  }
+
+  rpc FakeSendProcessDataSurveyOnePart(StringRequest) returns (MessageResponse) {
+    option (google.api.http) = {
+			post: "/send_process_data/survey/one_part/{value}"
+        body: "*"
+		};
+  }
+
+  rpc FakeSendProcessDataSurveyPhase3TwoPart(StringRequest) returns (MessageResponse) {
+    option (google.api.http) = {
+			post: "/send_process_data/survey/phase3_two_part/{value}"
+        body: "*"
+		};
+  }
+
+  rpc FakeSendProcessDataSurveyPhase4TwoPart(StringRequest) returns (MessageResponse) {
+    option (google.api.http) = {
+			post: "/send_process_data/survey/phase4_two_part/{value}"
+        body: "*"
+		};
+  }
+
+  rpc FakeSendProcessDataSurveyPhase5TwoPart(StringRequest) returns (MessageResponse) {
+    option (google.api.http) = {
+			post: "/send_process_data/survey/phase5_two_part/{value}"
+        body: "*"
+		};
+  }
+
+  rpc ProcessDataSurvey2(StringRequest) returns (MessageResponse) {
+    option (google.api.http) = {
+			post: "/process_data/survey_2/{value}"
+        body: "*"
+		};
+  }
+
+  rpc RequestGenarateRecommendCbf(StringRequest) returns (GenarateRecommendResponse) {
+    option (google.api.http) = {
+			post: "/request_genarate_recommend/cbf/{value}"
+        body: "*"
+		};
+  }
+
+  rpc RequestGenarateRecommendCf(StringRequest) returns (GenarateRecommendResponse) {
+    option (google.api.http) = {
+			post: "/request_genarate_recommend/cf/{value}"
+        body: "*"
+		};
+  }
+
+  rpc GetSurveyByTenant(StringRequest) returns (ListSurveyResponse) {
+    option (google.api.http) = {
+        get: "/get_survey_by_tenant/{value}"
+    };
+  }
+
+  rpc GetSurveyByUser(Request) returns (ListSurveyResponse) {
+    option (google.api.http) = {
+        get: "/get_survey_by_user"
+    };
+  }
+
+  rpc GetCategoriesByRecommendTenant(Request) returns (ListCategoryResponse) {
+    option (google.api.http) = {
+        get: "/get_categories_by_recommend_tenant"
+    };
+  }
+  
+
+  rpc GetSurveyByTenantId(Request) returns (ListSurveyResponse) {
+    option (google.api.http) = {
+        get: "/get_survey_by_tenant_id"
+    };
+  }
+
+  rpc RequestGenarateRecommendUserCbf(RequestGenarateRecommendUser) returns (ListCategoryRecommendResponse) {
+    option (google.api.http) = {
+			post: "/request_genarate_recommend/user/cbf"
+        body: "*"
+		};
+  }
+
+  rpc RequestGenarateRecommendUserCf(RequestGenarateRecommendUser) returns (ListCategoryRecommendResponse) {
+    option (google.api.http) = {
+			post: "/request_genarate_recommend/user/cf"
+        body: "*"
+		};
+  }
+}

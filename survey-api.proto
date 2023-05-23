@@ -8,8 +8,10 @@ import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 message Context {
-  string access_token = 1;
-}
+    string domain_id = 1;
+    string access_token = 2;
+    map<string,string> meta = 3;
+  }
 
 message StringRequest {
   Context ctx = 1;
@@ -24,21 +26,69 @@ message MessageResponse {
   bool ok = 1;
 }
 
-message Content {
-    string question = 1;
+message Question {
+    string message = 1;
     repeated string answers = 2;
-    string choose = 3;
+    string type = 3;
+    string category_id = 4;
+    int32 position = 5;
 }
 
 message Survey {
     string survey_id = 1;
     string user_id_create = 2;
     string user_id_verify = 3;
-    string user_id_join = 4;
-    repeated Content contents = 5;
+    repeated string user_id_join = 4;
+    repeated Question questions = 5;
     string status = 6;
-    int32 create_time = 7;
-    int32 update_time = 8;
+    int32 created_time = 7;
+    int32 updated_time = 8;
+    string domain_id = 9;
+    string type = 10;
+    string name = 11;
+}
+
+message SurveyResponse {
+    Survey data = 1;
+}
+
+message Category {
+    string category_id = 1;
+    string name = 2;
+    int32 created_time = 3;
+    int32 updated_time = 4;
+    string domain_id = 5;
+    string type = 6;
+    int32 position = 7;
+}
+
+message FakeCategoryRequest {
+    Context ctx = 1;
+    int32 number_category = 2;
+}
+
+message FakeSurveyRequest {
+    Context ctx = 1;
+    int32 number_survey = 2;
+}
+
+message CategoryResponse {
+    Category data = 1;
+}
+
+message CategoryRequest {
+    Context ctx = 1;
+    Category data = 2;
+}
+
+message UpdateCategoryRequest {
+    Context ctx = 1;
+    Category data = 2;
+}
+
+message ListCategoryResponse {
+    repeated Category data = 1;
+    int32 total = 2;
 }
 
 message SurveyRequest {
@@ -53,10 +103,25 @@ message UpdateSurveyRequest {
 }
 
 message ListRequest {
+    enum OrderType {
+        ASC = 0;
+        DESC = 1;
+    }
+    message Filter {
+        string key = 1;
+        string value = 2;
+        string operator = 3;
+    }
+  
     Context ctx = 1;
-    Pagination data = 2;
-    string search = 3;
-}
+    int32 offset = 2;
+    int32 limit = 3;
+    string search = 4;
+    map<string,OrderType> orders = 5;
+    repeated Filter filters = 6;
+    map<string,string> extra_params = 7;
+    string request_payload = 8;
+  }
 
 message Pagination {
     int32 number = 1;
@@ -69,53 +134,109 @@ message ListSurveyResponse {
 }
 
 service SurveyService {
-    rpc CreateSurvey(SurveyRequest) returns (Survey) {
+    rpc CreateSurvey(SurveyRequest) returns (SurveyResponse) {
         option (google.api.http) = {
-            post: "/v1/survey-api/surveys/create"
-            body: "*"
+            post: "/v1/survey-api/{ctx.domain_id}/surveys"
+                body: "*"
         };
     }
 
-    rpc UpdateSurveyById(UpdateSurveyRequest) returns (StringResponse) {
+    rpc UpdateSurveyById(UpdateSurveyRequest) returns (SurveyResponse) {
         option (google.api.http) = {
-            put: "/v1/survey-api/surveys/updateById/{value}"
-            body: "*"
+            put: "/v1/survey-api/{ctx.domain_id}/surveys"
+                body: "*"
         };
     }
 
-    rpc GetAll(ListRequest) returns (ListSurveyResponse) {
+    rpc GetAllSurvey(ListRequest) returns (ListSurveyResponse) {
         option (google.api.http) = {
-            get: "/v1/survey-api/surveys/getAll"
+            get: "/v1/survey-api/{ctx.domain_id}/surveys/@all/getAll"
         };
-      }
+    }
 
-    rpc GetSurveyById(StringRequest) returns (Survey) {
+    rpc GetSurveyById(StringRequest) returns (SurveyResponse) {
         option (google.api.http) = {
-            get: "/v1/survey-api/surveys/getById/{value}"
+            get: "/v1/survey-api/{ctx.domain_id}/surveys/{value}"
         };
     }
 
     rpc GetSurveyByUserJoin(StringRequest) returns (ListSurveyResponse) {
         option (google.api.http) = {
-            get: "/v1/survey-api/surveys/getByUserJoin/{value}"
+            get: "/v1/survey-api/{ctx.domain_id}/surveys/getByUserJoin/{value}"
+        };
+    }
+
+    rpc GetSurveyByTenant(StringRequest) returns (ListSurveyResponse) {
+        option (google.api.http) = {
+            get: "/v1/survey-api/{ctx.domain_id}/surveys/get_by_tenant/{value}"
         };
     }
 
     rpc GetSurveyByUserCreate(StringRequest) returns (ListSurveyResponse) {
         option (google.api.http) = {
-            get: "/v1/survey-api/surveys/getByUserCreate/{value}"
+            get: "/v1/survey-api/{ctx.domain_id}/surveys/getByUserCreate/{value}"
         };
     }
 
     rpc ApproveBySurveyId(StringRequest) returns (StringResponse) {
         option (google.api.http) = {
-            get: "/v1/survey-api/surveys/approveBySurveyId/{value}"
+            get: "/v1/survey-api/{ctx.domain_id}/surveys/approveBySurveyId/{value}"
         };
     }
 
     rpc DeleteSurveyById(StringRequest) returns (StringResponse) {
         option (google.api.http) = {
-            delete: "/v1/survey-api/surveys/deleteById/{value}"
+            delete: "/v1/survey-api/{ctx.domain_id}/surveys/deleteById/{value}"
+        };
+    }
+
+    rpc CreateCategory(CategoryRequest) returns (CategoryResponse) {
+        option (google.api.http) = {
+            post: "/v1/survey-api/{ctx.domain_id}/categories"
+                body: "*"
+        };
+    }
+
+    rpc UpdateCategory(UpdateCategoryRequest) returns (CategoryResponse) {
+        option (google.api.http) = {
+            put: "/v1/survey-api/{ctx.domain_id}/categories"
+                body: "*"
+        };
+    }
+
+    rpc GetAllCategory(ListRequest) returns (ListCategoryResponse) {
+        option (google.api.http) = {
+            get: "/v1/survey-api/{ctx.domain_id}/categories/@all/getAll"
+        };
+    }
+
+    rpc DeleteCategory(StringRequest) returns (StringResponse) {
+        option (google.api.http) = {
+            delete: "/v1/survey-api/{ctx.domain_id}/categories/{value}"
+        };
+    }
+
+    rpc GetCategory(StringRequest) returns (CategoryResponse) {
+        option (google.api.http) = {
+            get: "/v1/survey-api/{ctx.domain_id}/categories/{value}"
+        };
+    }
+    rpc FakeCategories(FakeCategoryRequest) returns (StringResponse) {
+        option (google.api.http) = {
+            post: "/v1/survey-api/{ctx.domain_id}/categories/@all/fake_categories"
+                body: "*"
+        };
+    }
+    rpc FakeSurveys(FakeSurveyRequest) returns (StringResponse) {
+        option (google.api.http) = {
+            post: "/v1/survey-api/{ctx.domain_id}/survey/@all/fake_surveys"
+                body: "*"
+        };
+    }
+
+    rpc GetCategoriesByRecommendTenant(StringRequest) returns (ListCategoryResponse) {
+        option (google.api.http) = {
+            get: "/v1/survey-api/{ctx.domain_id}/categories/get_by_recomend/{value}"
         };
     }
 }
