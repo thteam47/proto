@@ -291,6 +291,21 @@ message ListCategoryRecommendResponse {
   int32 total = 2;
 }
 
+message Tenant {
+  string tenant_id = 1;
+  string domain = 2;
+  string name = 3;
+  int32 created_time = 4;
+  int32 updated_time = 5;
+  map<string,string> meta = 6;
+  string customer_id = 7;
+}
+
+message ListTenantResponse {
+  repeated Tenant data = 1;
+  int32 total = 2;
+}
+
 service AgentpcService {
   rpc GetById(Request) returns (UserResponse) {
     option (google.api.http) = {
@@ -437,6 +452,13 @@ service AgentpcService {
     option (google.api.http) = {
 			post: "/request_genarate_recommend/user/cf"
         body: "*"
+		};
+  }
+
+
+  rpc GetAllTenant(Request) returns (ListTenantResponse) {
+    option (google.api.http) = {
+			get: "/tenants/get_all"
 		};
   }
 }
